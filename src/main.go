@@ -35,6 +35,12 @@ func getCommandLineArguments() ([]string, error) {
 	return args, nil
 }
 
+func buildPacket() *ntpPacket {
+	packet := new(ntpPacket)
+	packet.uli_vn_mode = 0x1B
+	return packet
+}
+
 func main() {
 
 	args, err := getCommandLineArguments()
@@ -44,8 +50,13 @@ func main() {
 		os.Exit(1)
 	}
 
+	packet := buildPacket()
+
 	fmt.Println("args: ")
 	for _, arg := range args {
 		fmt.Println(arg)
 	}
+
+	fmt.Println("packet:")
+	fmt.Println(packet)
 }
