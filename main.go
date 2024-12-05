@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-	"sntp-client/cli"
 	"sntp-client/client-socket"
+	"sntp-client/command-line"
 )
 
 func main() {
 
-	ipAddress := cli.GetIPAddress()
+	ipAddress := commandLine.GetIPAddress()
 	packet := clientSocket.BuildPacket()
 
 	fmt.Println("ip address: ", ipAddress)
