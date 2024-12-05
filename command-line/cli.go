@@ -2,8 +2,8 @@ package commandLine
 
 import (
 	"errors"
-	"fmt"
 	"os"
+	"sntp-client/error-handling"
 )
 
 func getCommandLineArguments() ([]string, error) {
@@ -21,8 +21,7 @@ func GetIPAddress() string {
 	args, err := getCommandLineArguments()
 
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		errorHandling.LogErrorAndExit(err)
 	}
 
 	return args[0]

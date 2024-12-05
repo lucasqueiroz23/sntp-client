@@ -1,5 +1,12 @@
 package clientSocket
 
+import (
+	"encoding/json"
+	"fmt"
+	"net"
+	"sntp-client/error-handling"
+)
+
 type ntpPacket struct {
 	uli_vn_mode     int8
 	ustratum        int8
@@ -18,8 +25,45 @@ type ntpPacket struct {
 	txTm_f          uint32
 }
 
-func BuildPacket() *ntpPacket {
+func buildPacketByteArray() []byte {
 	packet := new(ntpPacket)
 	packet.uli_vn_mode = 0x1B
-	return packet
+
+	message, err := json.Marshal(packet)
+
+	if err != nil {
+		errorHandling.LogErrorAndExit(err)
+	}
+
+	return message
+}
+
+func MakeRequest(IPAddress string) {
+	// the default port for the NTP protocol
+	ntpPort := "123"
+	fullAddress := IPAddress + ":" + ntpPort
+
+	conn, dialErr := net.Dial("udp", fullAddress)
+
+	if dialErr != nil {
+		errorHandling.LogErrorAndExit(dialErr)
+	}
+
+	message := buildPacketByteArray()
+
+	_, writeErr := conn.Write(message)
+
+	if writeErr != nil {
+		errorHandling.LogErrorAndExit(writeErr)
+	}
+
+	received := make([]byte, 1024)
+	_, readErr := conn.Read(received)
+	if readErr != nil {
+		errorHandling.LogErrorAndExit(readErr)
+	}
+
+	conn.Close()
+
+	fmt.Println(received)
 }
