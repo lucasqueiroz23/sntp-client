@@ -6,6 +6,6 @@ import (
 )
 
 func LogErrorAndExit(err error) {
-	fmt.Fprintln(os.Stderr, err)
+	fmt.Fprintln(os.Stderr, "erro: ", err)
 	os.Exit(1)
 }
