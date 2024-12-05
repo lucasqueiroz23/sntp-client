@@ -1,9 +1,9 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"os"
+	"sntp-client/cli"
 )
 
 type ntpPacket struct {
@@ -24,26 +24,19 @@ type ntpPacket struct {
 	txTm_f          uint32
 }
 
-func getCommandLineArguments() ([]string, error) {
-	args := os.Args[1:]
-	correctUsage := "Erro no uso. Modo correto de usar:\n./client <ip do servidor NTP>"
-
-	if len(args) != 1 {
-		return nil, errors.New(correctUsage)
-	}
-
-	return args, nil
-}
-
 func buildPacket() *ntpPacket {
 	packet := new(ntpPacket)
 	packet.uli_vn_mode = 0x1B
 	return packet
 }
 
+func checkIPAddress() bool {
+	return true
+}
+
 func main() {
 
-	args, err := getCommandLineArguments()
+	args, err := cli.GetCommandLineArguments()
 
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
