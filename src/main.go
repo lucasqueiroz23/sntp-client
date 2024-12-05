@@ -26,7 +26,7 @@ type ntpPacket struct {
 
 func getCommandLineArguments() ([]string, error) {
 	args := os.Args[1:]
-	correctUsage := "Modo correto de usar:\n./client <ip do servidor NTP>"
+	correctUsage := "Erro no uso. Modo correto de usar:\n./client <ip do servidor NTP>"
 
 	if len(args) != 1 {
 		return nil, errors.New(correctUsage)
