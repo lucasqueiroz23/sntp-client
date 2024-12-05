@@ -1,44 +1,49 @@
 package clientSocket
 
 import (
-	"encoding/json"
-	"fmt"
+	"bytes"
+	"encoding/binary"
 	"net"
 	"sntp-client/error-handling"
 )
 
 type ntpPacket struct {
-	uli_vn_mode     int8
-	ustratum        int8
-	upoll           int8
-	uprecision      int8
-	urootDelay      int32
-	urootDispersion int32
-	urefId          int32
-	urefTm_s        int32
-	urefTm_f        int32
-	uorigTm_s       int32
-	uorigTm_f       int32
-	urxTm_s         int32
-	urxTm_f         int32
-	utxTm_s         int32
-	txTm_f          uint32
+	Uli_vn_mode     int8
+	Ustratum        int8
+	Upoll           int8
+	Uprecision      int8
+	UrootDelay      int32
+	UrootDispersion int32
+	UrefId          int32
+	UrefTm_s        int32
+	UrefTm_f        int32
+	UorigTm_s       int32
+	UorigTm_f       int32
+	UrxTm_s         int32
+	UrxTm_f         int32
+	UtxTm_s         int32
+	TxTm_f          uint32
 }
 
 func buildPacketByteArray() []byte {
 	packet := new(ntpPacket)
-	packet.uli_vn_mode = 0x1B
+	packet.Uli_vn_mode = 0x1B
 
-	message, err := json.Marshal(packet)
+	message := bytes.NewBuffer(make([]byte, 0, 48))
 
-	if err != nil {
-		errorHandling.LogErrorAndExit(err)
+	writeErr := binary.Write(message, binary.BigEndian, packet)
+	if writeErr != nil {
+		errorHandling.LogErrorAndExit(writeErr)
 	}
 
-	return message
+	return message.Bytes()
+
 }
 
-func MakeRequest(IPAddress string) {
+func MakeRequest(IPAddress string) []byte {
+
+	message := buildPacketByteArray()
+
 	// the default port for the NTP protocol
 	ntpPort := "123"
 	fullAddress := IPAddress + ":" + ntpPort
@@ -49,21 +54,19 @@ func MakeRequest(IPAddress string) {
 		errorHandling.LogErrorAndExit(dialErr)
 	}
 
-	message := buildPacketByteArray()
-
 	_, writeErr := conn.Write(message)
 
 	if writeErr != nil {
 		errorHandling.LogErrorAndExit(writeErr)
 	}
 
-	received := make([]byte, 1024)
-	_, readErr := conn.Read(received)
+	response := make([]byte, 64)
+	_, readErr := conn.Read(response)
 	if readErr != nil {
 		errorHandling.LogErrorAndExit(readErr)
 	}
 
 	conn.Close()
 
-	fmt.Println(received)
+	return response
 }
