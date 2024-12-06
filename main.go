@@ -11,5 +11,5 @@ func main() {
 
 	ipAddress := commandLine.GetIPAddress()
 	response := clientSocket.MakeRequest(ipAddress)
-	fmt.Println(parser.Parse(response))
+	fmt.Println(parser.GetDate(response))
 }

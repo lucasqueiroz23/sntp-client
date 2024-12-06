@@ -14,7 +14,7 @@ const hoursInADay float64 = 24.0
 const minutesInAnHour float64 = 60.0
 const secondsInAMinute float64 = 60.0
 
-func Parse(serverResponse []byte) string {
+func GetDate(serverResponse []byte) string {
 	packet := getResponsePacket(serverResponse)
 
 	fmt.Println("ano atual: ", getCurrentYear(packet.TxTm_s))
