@@ -7,26 +7,26 @@ import (
 	"sntp-client/error-handling"
 )
 
-type ntpPacket struct {
-	Uli_vn_mode     int8
-	Ustratum        int8
-	Upoll           int8
-	Uprecision      int8
-	UrootDelay      int32
-	UrootDispersion int32
-	UrefId          int32
-	UrefTm_s        int32
-	UrefTm_f        int32
-	UorigTm_s       int32
-	UorigTm_f       int32
-	UrxTm_s         int32
-	UrxTm_f         int32
-	UtxTm_s         int32
+type NtpPacket struct {
+	Uli_vn_mode     uint8
+	Ustratum        uint8
+	Upoll           uint8
+	Uprecision      uint8
+	UrootDelay      uint32
+	UrootDispersion uint32
+	UrefId          uint32
+	UrefTm_s        uint32
+	UrefTm_f        uint32
+	UorigTm_s       uint32
+	UorigTm_f       uint32
+	UrxTm_s         uint32
+	UrxTm_f         uint32
+	UtxTm_s         uint32
 	TxTm_f          uint32
 }
 
 func buildPacketByteArray() []byte {
-	packet := new(ntpPacket)
+	packet := new(NtpPacket)
 	packet.Uli_vn_mode = 0x1B
 
 	message := bytes.NewBuffer(make([]byte, 0, 48))
@@ -42,8 +42,6 @@ func buildPacketByteArray() []byte {
 
 func MakeRequest(IPAddress string) []byte {
 
-	message := buildPacketByteArray()
-
 	// the default port for the NTP protocol
 	ntpPort := "123"
 	fullAddress := IPAddress + ":" + ntpPort
@@ -54,13 +52,14 @@ func MakeRequest(IPAddress string) []byte {
 		errorHandling.LogErrorAndExit(dialErr)
 	}
 
+	message := buildPacketByteArray()
 	_, writeErr := conn.Write(message)
 
 	if writeErr != nil {
 		errorHandling.LogErrorAndExit(writeErr)
 	}
 
-	response := make([]byte, 64)
+	response := make([]byte, 48) // the size of a packet is 48 bytes
 	_, readErr := conn.Read(response)
 	if readErr != nil {
 		errorHandling.LogErrorAndExit(readErr)
