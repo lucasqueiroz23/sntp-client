@@ -8,26 +8,26 @@ import (
 )
 
 type NtpPacket struct {
-	Uli_vn_mode     uint8
-	Ustratum        uint8
-	Upoll           uint8
-	Uprecision      uint8
-	UrootDelay      uint32
-	UrootDispersion uint32
-	UrefId          uint32
-	UrefTm_s        uint32
-	UrefTm_f        uint32
-	UorigTm_s       uint32
-	UorigTm_f       uint32
-	UrxTm_s         uint32
-	UrxTm_f         uint32
-	UtxTm_s         uint32
-	TxTm_f          uint32
+	Li_vn_mode     uint8
+	Stratum        uint8
+	Poll           uint8
+	Precision      uint8
+	RootDelay      uint32
+	RootDispersion uint32
+	RefId          uint32
+	RefTm_s        uint32
+	RefTm_f        uint32
+	OrigTm_s       uint32
+	OrigTm_f       uint32
+	RxTm_s         uint32
+	RxTm_f         uint32
+	TxTm_s         uint32
+	TxTm_f         uint32
 }
 
 func buildPacketByteArray() []byte {
 	packet := new(NtpPacket)
-	packet.Uli_vn_mode = 0x1B
+	packet.Li_vn_mode = 0x1B
 
 	message := bytes.NewBuffer(make([]byte, 0, 48))
 

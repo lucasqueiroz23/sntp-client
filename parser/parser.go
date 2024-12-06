@@ -3,16 +3,24 @@ package parser
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	"sntp-client/client-socket"
 	"sntp-client/error-handling"
 )
 
-func Parse(time []byte) *clientSocket.NtpPacket {
+func Parse(serverResponse []byte) string {
+	packet := getResponsePacket(serverResponse)
+
+	fmt.Println(packet.TxTm_s)
+	return ""
+}
+
+func getResponsePacket(serverResponse []byte) *clientSocket.NtpPacket {
 	response := new(clientSocket.NtpPacket)
 
-	buf := bytes.NewReader(time)
+	binaryResponse := bytes.NewReader(serverResponse)
 
-	if readErr := binary.Read(buf, binary.BigEndian, response); readErr != nil {
+	if readErr := binary.Read(binaryResponse, binary.BigEndian, response); readErr != nil {
 		errorHandling.LogErrorAndExit(readErr)
 	}
 
