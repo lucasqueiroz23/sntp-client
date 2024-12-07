@@ -3,7 +3,7 @@ package parser
 import (
 	"bytes"
 	"encoding/binary"
-	// "fmt"
+	"fmt"
 	"sntp-client/client-socket"
 	"sntp-client/error-handling"
 	"strconv"
@@ -21,13 +21,23 @@ const dateTimePrefix string = "Data/hora: "
 func GetDate(serverResponse []byte) string {
 	timePassedInSeconds := getResponsePacket(serverResponse).TxTm_s
 	currentYear := getCurrentYear(timePassedInSeconds)
-	today := getDayOfTheWeek(daysPastSince(timePassedInSeconds))
-	currentMonth := getCurrentMonth(monthsPastSince(timePassedInSeconds))
+
+	daysSinceBaseDate := daysPastSince(timePassedInSeconds)
+	monthsSinceBaseDate := monthsPastSince(timePassedInSeconds)
+
+	today := getDayOfTheWeek(daysSinceBaseDate)
+	currentMonth := getCurrentMonth(monthsSinceBaseDate)
+
+	currentTime := getCurrentTime(timePassedInSeconds)
+
+	currentDay := "not implemented yet"
 
 	return dateTimePrefix +
-		strconv.FormatUint(uint64(currentYear), 10) + " " +
 		today + " " +
-		currentMonth
+		currentMonth + " " +
+		currentDay + " " +
+		currentTime + " " +
+		strconv.FormatUint(uint64(currentYear), 10)
 }
 
 func getResponsePacket(serverResponse []byte) *clientSocket.NtpPacket {
@@ -66,3 +76,31 @@ func getCurrentMonth(monthsPassedSinceBaseDate uint32) string {
 	const monthsInAYear = 12
 	return months[monthsPassedSinceBaseDate%monthsInAYear]
 }
+
+func getCurrentTime(timePassedInSeconds uint32) string {
+	seconds := timePassedInSeconds % 60
+	minutes := (timePassedInSeconds / 60) % 60
+	hours := (timePassedInSeconds/(60*60) - 3) % 24
+	fmt.Println(timePassedInSeconds)
+	return strconv.FormatInt(int64(hours), 10) + ":" + strconv.FormatInt(int64(minutes), 10) + ":" + strconv.FormatInt(int64(seconds), 10)
+}
+
+// func getCurrentDay(currentMonth string) string {
+//
+// 	daysInMonths := map[string]int{
+// 		"Jan": 31,
+// 		"Fev": 28,
+// 		"Mar": 31,
+// 		"Abr": 30,
+// 		"Mai": 31,
+// 		"Jun": 30,
+// 		"Jul": 31,
+// 		"Ago": 31,
+// 		"Set": 30,
+// 		"Out": 31,
+// 		"Nov": 30,
+// 		"Dez": 31,
+// 	}
+//
+// 	return strconv.FormatInt(int64(daysInMonths[currentMonth]), 10)
+// }
