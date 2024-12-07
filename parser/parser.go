@@ -18,7 +18,6 @@ const (
 	secondsInAMinute float64 = 60.0
 	daysInAWeek              = 7
 	monthsInAYear            = 12
-	currentTimezone          = 3 // in Brazil, we have UTC-3
 )
 
 const dateTimePrefix string = "Data/hora: "
@@ -35,7 +34,7 @@ func GetDate(serverResponse []byte) string {
 
 	currentTime := getCurrentTime(timePassedInSeconds)
 
-	currentDay := "not implemented yet"
+	currentDay := getCurrentDay()
 
 	return dateTimePrefix +
 		today + " " +
@@ -84,28 +83,28 @@ func getCurrentTime(timePassedInSeconds uint32) string {
 
 	seconds := timePassedInSeconds % uint32(secondsInAMinute)
 	minutes := (timePassedInSeconds / uint32(secondsInAMinute)) % uint32(minutesInAnHour)
-	hours := (timePassedInSeconds/(uint32(secondsInAMinute)*uint32(minutesInAnHour)) - currentTimezone) % uint32(hoursInADay)
+	hours := (timePassedInSeconds / (uint32(secondsInAMinute) * uint32(minutesInAnHour))) % uint32(hoursInADay)
 
 	fmt.Println(timePassedInSeconds)
 	return fmt.Sprintf("%02d:%02d:%02d", hours, minutes, seconds)
 }
 
-// func getCurrentDay(currentMonth string) string {
-//
-// 	daysInMonths := map[string]int{
-// 		"Jan": 31,
-// 		"Fev": 28,
-// 		"Mar": 31,
-// 		"Abr": 30,
-// 		"Mai": 31,
-// 		"Jun": 30,
-// 		"Jul": 31,
-// 		"Ago": 31,
-// 		"Set": 30,
-// 		"Out": 31,
-// 		"Nov": 30,
-// 		"Dez": 31,
-// 	}
-//
-// 	return strconv.FormatInt(int64(daysInMonths[currentMonth]), baseTen)
-// }
+func getCurrentDay() string {
+
+	// daysInMonths := map[string]int{
+	// 	"Jan": 31,
+	// 	"Fev": 28,
+	// 	"Mar": 31,
+	// 	"Abr": 30,
+	// 	"Mai": 31,
+	// 	"Jun": 30,
+	// 	"Jul": 31,
+	// 	"Ago": 31,
+	// 	"Set": 30,
+	// 	"Out": 31,
+	// 	"Nov": 30,
+	// 	"Dez": 31,
+	// }
+	//
+	return "not implemented"
+}
