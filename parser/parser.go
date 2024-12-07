@@ -26,14 +26,13 @@ var (
 	months        = [12]string{"Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"}
 )
 
-type monthData struct {
-	daysPassedInTheYear, daysInTheMonth int
-}
-
 const dateTimePrefix string = "Data/hora: "
 
 func GetDate(serverResponse []byte) string {
 	timePassedInSeconds := getResponsePacket(serverResponse).TxTm_s
+
+	timePassedInSeconds += 24 * 60 * 60 * (25 + 31)
+
 	currentYear := getCurrentYear(timePassedInSeconds)
 
 	daysSinceBaseDate := daysPastSince(timePassedInSeconds)
@@ -75,10 +74,6 @@ func getDayOfTheWeek(daysSinceBaseDate uint32) string {
 	return daysOfTheWeek[daysSinceBaseDate%daysInAWeek]
 }
 
-func monthsPastSince(timePassedInSeconds uint32) uint32 {
-	return uint32(float64(timePassedInSeconds) / ((daysInAMonth) * (hoursInADay) * (minutesInAnHour) * (secondsInAMinute)))
-}
-
 func getCurrentTime(timePassedInSeconds uint32) string {
 
 	seconds := timePassedInSeconds % uint32(secondsInAMinute)
@@ -89,38 +84,61 @@ func getCurrentTime(timePassedInSeconds uint32) string {
 }
 
 func getCurrentDay(daysSinceBaseDate uint32, currentYear uint32) string {
+	daysInMonths := [12]uint32{31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}
 
 	yearsPassed := currentYear - baseYear
 	numberOfLeapYears := countLeapYears(int(baseYear), int(currentYear))
 
-	daysPassedThisYear := daysSinceBaseDate - (365*(yearsPassed-uint32(numberOfLeapYears)) + 366*uint32(numberOfLeapYears))
-	daysInMonths := [12]uint32{31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}
+	// days passed since jan 1st
+	daysPassedSinceJanFirst := daysSinceBaseDate - (365*(yearsPassed-uint32(numberOfLeapYears)) + 366*uint32(numberOfLeapYears))
 
+	// edge case: we are in january
+	if daysPassedSinceJanFirst < daysInMonths[0] {
+		return "Jan " + strconv.FormatUint(uint64(daysPassedSinceJanFirst+1), baseTen)
+	}
+
+	// check feb 29
 	if yearIsLeap(currentYear) {
 		daysInMonths[1]++
-	}
-
-	// check if feb 29 has passed
-	if daysPassedThisYear > uint32(daysInMonths[0]+daysInMonths[1]) {
-		daysPassedThisYear++
-	}
-
-	var currentDay uint32 = 0
-
-	var currentMonthIndex int = 0
-	for i := 0; i < 11; i++ {
-		daysInMonths[i+1] += daysInMonths[i]
-
-		if daysPassedThisYear >= daysInMonths[i] && daysPassedThisYear <= daysInMonths[i+1] {
-			currentMonthIndex = i
-			offsetToday := 1
-			currentDay = (daysPassedThisYear - daysInMonths[currentMonthIndex]) + uint32(offsetToday)
-
-			if currentDay > 0 {
-				currentMonthIndex++
-			}
+		if daysPassedSinceJanFirst >= daysInMonths[0]+daysInMonths[1] {
+			daysPassedSinceJanFirst++
 		}
 	}
+
+	var currentMonthIndex int = 0
+
+	daysThisYear := daysInMonths
+
+	for i := 0; i < 11; i++ {
+		daysThisYear[i+1] += daysThisYear[i]
+	}
+
+	// get current month
+	for i, val := range daysThisYear {
+		if daysPassedSinceJanFirst >= val {
+			fmt.Println("month = ", 1+i)
+			currentMonthIndex = i
+		}
+	}
+
+	// check if i'm in the first day of the next month
+	if daysPassedSinceJanFirst >= daysThisYear[currentMonthIndex] {
+		currentMonthIndex++
+		fmt.Println("month = ", 1+currentMonthIndex)
+	}
+
+	var currentDay uint32 = 1             // starting from january first
+	currentDay += daysPassedSinceJanFirst // now I have the exact date of the year
+
+	firstDayOfTheMonth := daysThisYear[currentMonthIndex-1]
+	fmt.Println(firstDayOfTheMonth)
+
+	currentDay -= firstDayOfTheMonth
+
+	fmt.Println("days since january first", daysPassedSinceJanFirst)
+	fmt.Println("current day = ", currentDay)
+	fmt.Println("days in months", daysInMonths)
+	fmt.Println("days this year", daysThisYear)
 
 	return months[currentMonthIndex] + " " + strconv.FormatUint(uint64(currentDay), baseTen)
 }
