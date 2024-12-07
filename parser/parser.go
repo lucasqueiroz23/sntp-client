@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"sntp-client/client-socket"
 	"sntp-client/error-handling"
+	"strconv"
 )
 
 const (
@@ -20,6 +21,15 @@ const (
 	monthsInAYear            = 12
 )
 
+var (
+	daysOfTheWeek = [7]string{"Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"}
+	months        = [12]string{"Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"}
+)
+
+type monthData struct {
+	daysPassedInTheYear, daysInTheMonth int
+}
+
 const dateTimePrefix string = "Data/hora: "
 
 func GetDate(serverResponse []byte) string {
@@ -27,18 +37,15 @@ func GetDate(serverResponse []byte) string {
 	currentYear := getCurrentYear(timePassedInSeconds)
 
 	daysSinceBaseDate := daysPastSince(timePassedInSeconds)
-	monthsSinceBaseDate := monthsPastSince(timePassedInSeconds)
 
 	today := getDayOfTheWeek(daysSinceBaseDate)
-	currentMonth := getCurrentMonth(monthsSinceBaseDate)
 
 	currentTime := getCurrentTime(timePassedInSeconds)
 
-	currentDay := getCurrentDay()
+	currentDay := getCurrentDay(daysSinceBaseDate, currentYear)
 
 	return dateTimePrefix +
 		today + " " +
-		currentMonth + " " +
 		currentDay + " " +
 		currentTime + " " +
 		fmt.Sprintf("%d", currentYear)
@@ -65,18 +72,11 @@ func daysPastSince(timePassedInSeconds uint32) uint32 {
 }
 
 func getDayOfTheWeek(daysSinceBaseDate uint32) string {
-	var daysOfTheWeek = [7]string{"Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"}
-
 	return daysOfTheWeek[daysSinceBaseDate%daysInAWeek]
 }
 
 func monthsPastSince(timePassedInSeconds uint32) uint32 {
 	return uint32(float64(timePassedInSeconds) / ((daysInAMonth) * (hoursInADay) * (minutesInAnHour) * (secondsInAMinute)))
-}
-
-func getCurrentMonth(monthsPassedSinceBaseDate uint32) string {
-	var months = [12]string{"Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"}
-	return months[monthsPassedSinceBaseDate%monthsInAYear]
 }
 
 func getCurrentTime(timePassedInSeconds uint32) string {
@@ -85,26 +85,54 @@ func getCurrentTime(timePassedInSeconds uint32) string {
 	minutes := (timePassedInSeconds / uint32(secondsInAMinute)) % uint32(minutesInAnHour)
 	hours := (timePassedInSeconds / (uint32(secondsInAMinute) * uint32(minutesInAnHour))) % uint32(hoursInADay)
 
-	fmt.Println(timePassedInSeconds)
 	return fmt.Sprintf("%02d:%02d:%02d", hours, minutes, seconds)
 }
 
-func getCurrentDay() string {
+func getCurrentDay(daysSinceBaseDate uint32, currentYear uint32) string {
 
-	// daysInMonths := map[string]int{
-	// 	"Jan": 31,
-	// 	"Fev": 28,
-	// 	"Mar": 31,
-	// 	"Abr": 30,
-	// 	"Mai": 31,
-	// 	"Jun": 30,
-	// 	"Jul": 31,
-	// 	"Ago": 31,
-	// 	"Set": 30,
-	// 	"Out": 31,
-	// 	"Nov": 30,
-	// 	"Dez": 31,
-	// }
-	//
-	return "not implemented"
+	yearsPassed := currentYear - baseYear
+	numberOfLeapYears := countLeapYears(int(baseYear), int(currentYear))
+
+	daysPassedThisYear := daysSinceBaseDate - (365*(yearsPassed-uint32(numberOfLeapYears)) + 366*uint32(numberOfLeapYears))
+	daysInMonths := [12]uint32{31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}
+
+	if yearIsLeap(currentYear) {
+		daysInMonths[1]++
+	}
+
+	// check if feb 29 has passed
+	if daysPassedThisYear > uint32(daysInMonths[0]+daysInMonths[1]) {
+		daysPassedThisYear++
+	}
+
+	var currentDay uint32 = 0
+
+	var currentMonthIndex int = 0
+	for i := 0; i < 11; i++ {
+		daysInMonths[i+1] += daysInMonths[i]
+
+		if daysPassedThisYear >= daysInMonths[i] && daysPassedThisYear <= daysInMonths[i+1] {
+			currentMonthIndex = i
+			offsetToday := 1
+			currentDay = (daysPassedThisYear - daysInMonths[currentMonthIndex]) + uint32(offsetToday)
+
+			if currentDay > 0 {
+				currentMonthIndex++
+			}
+		}
+	}
+
+	return months[currentMonthIndex] + " " + strconv.FormatUint(uint64(currentDay), baseTen)
+}
+
+func leapYearsUpTo(year int) int {
+	return (year / 4) - (year / 100) + (year / 400)
+}
+
+func countLeapYears(start, end int) int {
+	return leapYearsUpTo(end) - leapYearsUpTo(start-1)
+}
+
+func yearIsLeap(year uint32) bool {
+	return year%4 == 0 && year%100 != 0 || year%400 == 0
 }
