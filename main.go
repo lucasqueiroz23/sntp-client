@@ -8,7 +8,6 @@ import (
 )
 
 func main() {
-
 	ipAddress := commandLine.GetIPAddress()
 	response := clientSocket.MakeRequest(ipAddress)
 	fmt.Println(parser.GetDate(response))
