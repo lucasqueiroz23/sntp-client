@@ -9,13 +9,17 @@ import (
 	"strconv"
 )
 
-const baseTen = 10
-const baseYear uint32 = 1900       // int NTP, the base date is jan 1, 1900
-const daysInAYear float64 = 365.25 // the .25 accounts for years that have 366 days
-const daysInAMonth float64 = 30.44 // the .44 account for leap years aswell
-const hoursInADay float64 = 24.0
-const minutesInAnHour float64 = 60.0
-const secondsInAMinute float64 = 60.0
+const (
+	baseTen                  = 10
+	baseYear         uint32  = 1900   // int NTP, the base date is jan 1, 1900
+	daysInAYear      float64 = 365.25 // the .25 accounts for years that have 366 days
+	daysInAMonth     float64 = 30.44  // the .44 account for leap years aswell
+	hoursInADay      float64 = 24.0
+	minutesInAnHour  float64 = 60.0
+	secondsInAMinute float64 = 60.0
+	daysInAWeek              = 7
+	monthsInAYear            = 12
+)
 
 const dateTimePrefix string = "Data/hora: "
 
@@ -63,7 +67,6 @@ func daysPastSince(timePassedInSeconds uint32) uint32 {
 
 func getDayOfTheWeek(daysSinceBaseDate uint32) string {
 	var daysOfTheWeek = [7]string{"Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"}
-	const daysInAWeek = 7
 
 	return daysOfTheWeek[daysSinceBaseDate%daysInAWeek]
 }
@@ -74,7 +77,6 @@ func monthsPastSince(timePassedInSeconds uint32) uint32 {
 
 func getCurrentMonth(monthsPassedSinceBaseDate uint32) string {
 	var months = [12]string{"Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"}
-	const monthsInAYear = 12
 	return months[monthsPassedSinceBaseDate%monthsInAYear]
 }
 
