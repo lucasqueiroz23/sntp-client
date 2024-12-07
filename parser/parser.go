@@ -9,6 +9,7 @@ import (
 	"strconv"
 )
 
+const baseTen = 10
 const baseYear uint32 = 1900       // int NTP, the base date is jan 1, 1900
 const daysInAYear float64 = 365.25 // the .25 accounts for years that have 366 days
 const daysInAMonth float64 = 30.44 // the .44 account for leap years aswell
@@ -37,7 +38,7 @@ func GetDate(serverResponse []byte) string {
 		currentMonth + " " +
 		currentDay + " " +
 		currentTime + " " +
-		strconv.FormatUint(uint64(currentYear), 10)
+		strconv.FormatUint(uint64(currentYear), baseTen)
 }
 
 func getResponsePacket(serverResponse []byte) *clientSocket.NtpPacket {
@@ -78,11 +79,14 @@ func getCurrentMonth(monthsPassedSinceBaseDate uint32) string {
 }
 
 func getCurrentTime(timePassedInSeconds uint32) string {
-	seconds := timePassedInSeconds % 60
-	minutes := (timePassedInSeconds / 60) % 60
-	hours := (timePassedInSeconds/(60*60) - 3) % 24
+	const currentTimezone = 3 // in Brazil, we have UTC-3
+
+	seconds := timePassedInSeconds % uint32(secondsInAMinute)
+	minutes := (timePassedInSeconds / uint32(secondsInAMinute)) % uint32(minutesInAnHour)
+	hours := (timePassedInSeconds/(uint32(secondsInAMinute)*uint32(minutesInAnHour)) - currentTimezone) % uint32(hoursInADay)
+
 	fmt.Println(timePassedInSeconds)
-	return strconv.FormatInt(int64(hours), 10) + ":" + strconv.FormatInt(int64(minutes), 10) + ":" + strconv.FormatInt(int64(seconds), 10)
+	return strconv.FormatInt(int64(hours), baseTen) + ":" + strconv.FormatInt(int64(minutes), baseTen) + ":" + strconv.FormatInt(int64(seconds), baseTen)
 }
 
 // func getCurrentDay(currentMonth string) string {
@@ -102,5 +106,5 @@ func getCurrentTime(timePassedInSeconds uint32) string {
 // 		"Dez": 31,
 // 	}
 //
-// 	return strconv.FormatInt(int64(daysInMonths[currentMonth]), 10)
+// 	return strconv.FormatInt(int64(daysInMonths[currentMonth]), baseTen)
 // }
