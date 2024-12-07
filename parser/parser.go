@@ -30,9 +30,6 @@ const dateTimePrefix string = "Data/hora: "
 
 func GetDate(serverResponse []byte) string {
 	timePassedInSeconds := getResponsePacket(serverResponse).TxTm_s
-
-	timePassedInSeconds += 24 * 60 * 60 * (25 + 31)
-
 	currentYear := getCurrentYear(timePassedInSeconds)
 
 	daysSinceBaseDate := daysPastSince(timePassedInSeconds)
