@@ -116,7 +116,6 @@ func getCurrentDay(daysSinceBaseDate uint32, currentYear uint32) string {
 	// get current month
 	for i, val := range daysThisYear {
 		if daysPassedSinceJanFirst >= val {
-			fmt.Println("month = ", 1+i)
 			currentMonthIndex = i
 		}
 	}
@@ -124,21 +123,13 @@ func getCurrentDay(daysSinceBaseDate uint32, currentYear uint32) string {
 	// check if i'm in the first day of the next month
 	if daysPassedSinceJanFirst >= daysThisYear[currentMonthIndex] {
 		currentMonthIndex++
-		fmt.Println("month = ", 1+currentMonthIndex)
 	}
 
 	var currentDay uint32 = 1             // starting from january first
 	currentDay += daysPassedSinceJanFirst // now I have the exact date of the year
 
-	firstDayOfTheMonth := daysThisYear[currentMonthIndex-1]
-	fmt.Println(firstDayOfTheMonth)
-
-	currentDay -= firstDayOfTheMonth
-
-	fmt.Println("days since january first", daysPassedSinceJanFirst)
-	fmt.Println("current day = ", currentDay)
-	fmt.Println("days in months", daysInMonths)
-	fmt.Println("days this year", daysThisYear)
+	firstDayOfTheMonth := daysThisYear[currentMonthIndex-1] // the first day of the current month will be the value of the last month in this slice
+	currentDay -= firstDayOfTheMonth                        // current day of the month = exact date of today - exact date of the first day of this month
 
 	return months[currentMonthIndex] + " " + strconv.FormatUint(uint64(currentDay), baseTen)
 }
